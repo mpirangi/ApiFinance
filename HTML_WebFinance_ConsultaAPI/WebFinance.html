@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Consulta API a Cada 1 Segundo - Último request as: <span id="lastQueryTime"></span></h2></span></h1>
+
+    <table id="stockDataTable">
+        <thead>
+            <tr>
+                <th>Dia</th>
+                <th>Data</th>
+                <th>Valor</th>
+                <th>Variação em relação a D-1 (%)</th>
+                <th>Variação em relação à primeira data (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Os dados da API serão exibidos aqui -->
+        </tbody>
+    </table>
+
+    <script>
+        async function fetchData() {
+            try {
+                const startTime = new Date();
+                
+                // Substitua a URL abaixo pela URL real da sua API
+                const apiUrl = 'http://localhost:5129/api/Stock/PETR4.SA';
+
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                // Limpa a tabela antes de adicionar os novos dados
+                const tableBody = document.querySelector('#stockDataTable tbody');
+                tableBody.innerHTML = '';
+
+                // Adiciona os últimos 30 resultados à tabela
+                for (let i = 0; i < 30 && i < data.length; i++) {
+                    const item = data[i];
+                    const row = tableBody.insertRow();
+                    const cell1 = row.insertCell(0);
+                    const cell2 = row.insertCell(1);
+                    const cell3 = row.insertCell(2);
+                    const cell4 = row.insertCell(3);
+                    const cell5 = row.insertCell(4);
+
+                    cell1.textContent = i;
+                    cell2.textContent = new Date(item.dateTime).toLocaleDateString();
+                    cell3.textContent = `R$ ${item.regularMarketPrice.toFixed(2)}`;
+                    cell4.textContent = i === 0 ? '-' : `${item.variacaoDiaAnterior.toFixed(2)}%`;
+                    cell5.textContent = `${item.variacaoDesdePrimeiraData.toFixed(2)}%`;
+                }
+
+                const endTime = new Date();
+                const lastQueryTime = endTime - startTime;
+
+                // Exibe a última consulta no formato hh:mm:ss
+                document.getElementById('lastQueryTime').textContent = new Date().toLocaleTimeString();
+
+            } catch (error) {
+                console.error('Erro ao obter dados da API:', error.message);
+            }
+        }
+
+        // Chama a função fetchData a cada 3 segundos
+        setInterval(fetchData, 1000);
+
+        // Chama fetchData imediatamente na carga da página
+        fetchData();
+    </script>
+</body>
+</html>
